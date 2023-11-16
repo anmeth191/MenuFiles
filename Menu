@@ -1,0 +1,44 @@
+import os
+from pathlib import Path
+
+#This function uses Path.absolute to find the current direcotry anf then use Path again to finish the full path
+#after that I use os to scan what is inside the folder and make a list
+#once I get my list I pass that to another function 
+def display_recipes_files():
+    files_path = Path().absolute()
+    Recipe_file_path = Path(files_path , 'Recipes')
+    full_dir = os.scandir(Recipe_file_path)
+    for item in full_dir:
+        if item.is_dir():
+            recipes.append(item.name)
+    selectRecipe(recipes)
+
+#This function display the Menu and ask the user to enter an option       
+def selectRecipe(menu):
+      print("Menu: ")
+      counter = 1
+      for menu_item in menu:
+          print(f"{counter}. {menu_item}")
+          counter +=1
+      user_option = input("Select a Menu:")
+      evaluateUserInput(user_option , menu)         
+
+
+#This function evaluates if the user input is Valid
+def evaluateUserInput(choice , menu):
+    if not choice.isdigit():
+       selectRecipe(menu)
+    elif choice.isdigit() and int(choice) > 0 and int(choice) <= len(menu):
+        print("Siuuuuuu")
+    else:
+        selectRecipe(menu)
+            
+    
+#This function greets the userr and triggers the function to display recipe files
+def greet_user():
+    print("Welcome to this new Challenge , Python from Hero to Zerooooo Siuuuuuuu!!")
+    display_recipes_files()
+    
+recipes = []
+greet_user()
+
