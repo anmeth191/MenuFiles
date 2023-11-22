@@ -1,10 +1,11 @@
 import os
-from pathlib import Path
-
+from pathlib import Path , PurePath
+from os import system
 #This function uses Path.absolute to find the current direcotry anf then use Path again to finish the full path
 #after that I use os to scan what is inside the folder and make a list
 #once I get my list I pass that to another function 
 def display_recipes_files():
+    recipes = []
     files_path = Path().absolute()
     Recipe_file_path = Path(files_path , 'Recipes')
     full_dir = os.scandir(Recipe_file_path)
@@ -20,25 +21,90 @@ def selectRecipe(menu):
       for menu_item in menu:
           print(f"{counter}. {menu_item}")
           counter +=1
-      user_option = input("Select a Menu:")
-      evaluateUserInput(user_option , menu)         
+      user_option = input("Select a Menu: ")
+      evaluateUserInput(user_option , menu)       
 
+#This function is invoked when the user wants to create a new Recipe in a category  
+def create_new_recipe(folder_path):
+    recipe_name = input("What is the name of your recipe?: ")
+    recipe_content = input("Write the Recipe Content: ")
+    filepath = os.path.join(folder_path , f"{recipe_name}.txt")
+    f = open(filepath , 'w')
+    f.write(recipe_content)
+    f.close()
+    showRecipe(folder_path)
+    
+#This function deletes a recipe
+
+def delete_recipe(recipe):
+    if os.path.exists(recipe):
+        os.remove(recipe)
+        system('cls')
+        showRecipe(Path(recipe).parent)
+    else:
+        print("File does not exist")  
+
+#This function ask what the user wants to do once the recipe content has been displayed     
+def user_choices(recipe):
+    print("\nWhat would you like to do ?")
+    user_choice = int(input("Select an Option: \n 1. Create a new Recipe in this Category \n 2. Main Menu \n 3. Delete recipe \n"))
+    if user_choice == 2:
+        system('cls')
+        display_recipes_files()
+    elif user_choice == 1:
+        create_new_recipe(Path(recipe).parent)
+    elif user_choice ==3:
+        delete_recipe(recipe) 
+     
+ 
+#This line of code displays the Recipe Content         
+def displayRecipeContent(selectedRecipe):
+    system('cls')
+    print(f"                                Recipe Title: {Path(selectedRecipe).stem}")
+    print("--------------------------------------------------------------------------------------------------")
+    print("Recipe Content: ")
+    print(Path(selectedRecipe).read_text())
+    print("--------------------------------------------------------------------------------------------------")
+    print("                                     *End of the Recipe*")
+    print("--------------------------------------------------------------------------------------------------")
+    user_choices(selectedRecipe)
+  
+    
+
+
+#this Function gets the recipe when a user picks a category
+def showRecipe(recipe):
+    recipes_path = Path().absolute()
+    recipe_full_path = Path(recipes_path , 'Recipes' , recipe)
+    scan_recipes = os.scandir(recipe_full_path)
+    files_path_list = []
+    counter = 1
+    system('cls')
+    print("Which Recipe would you like to read ?: ")
+    for recipe in scan_recipes:
+        files_path_list.append(PurePath(recipe_full_path , recipe))
+        print(f"{counter}.{Path(recipe_full_path , recipe).stem}")
+        counter +=1
+    recipeSelected = input("Select a Recipe: ")     
+    displayRecipeContent(files_path_list[int(recipeSelected) - 1])
+   
+    
 
 #This function evaluates if the user input is Valid
 def evaluateUserInput(choice , menu):
     if not choice.isdigit():
        selectRecipe(menu)
     elif choice.isdigit() and int(choice) > 0 and int(choice) <= len(menu):
-        print("Siuuuuuu")
+       showRecipe(menu[int(choice)-1])
     else:
         selectRecipe(menu)
-            
-    
+                
 #This function greets the userr and triggers the function to display recipe files
 def greet_user():
     print("Welcome to this new Challenge , Python from Hero to Zerooooo Siuuuuuuu!!")
     display_recipes_files()
     
-recipes = []
+
 greet_user()
+
 
