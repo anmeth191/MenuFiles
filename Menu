@@ -1,6 +1,7 @@
 import os
 from pathlib import Path , PurePath
 from os import system
+import shutil
 #This function uses Path.absolute to find the current direcotry anf then use Path again to finish the full path
 #after that I use os to scan what is inside the folder and make a list
 #once I get my list I pass that to another function 
@@ -16,13 +17,23 @@ def display_recipes_files():
 
 #This function display the Menu and ask the user to enter an option       
 def selectRecipe(menu):
-      print("Menu: ")
       counter = 1
       for menu_item in menu:
           print(f"{counter}. {menu_item}")
           counter +=1
-      user_option = input("Select a Menu: ")
+      print("Menu: ")
+      user_option = input("Select a Category in Menu:\nType 0 to create a New Category: ")    
       evaluateUserInput(user_option , menu)       
+
+def create_new_category():
+    folder_categories = os.path.join(Path().absolute() , "Recipes")
+    new_category = input("Please provide the name of the new Category: ")
+    if not os.path.exists(os.path.join(folder_categories , f"{new_category}")):
+        os.makedirs(os.path.join(folder_categories , f"{new_category}"))
+        display_recipes_files()
+    else:
+        print("This Category Already Exist !")
+    
 
 #This function is invoked when the user wants to create a new Recipe in a category  
 def create_new_recipe(folder_path):
@@ -42,7 +53,16 @@ def delete_recipe(recipe):
         system('cls')
         showRecipe(Path(recipe).parent)
     else:
-        print("File does not exist")  
+        print("File does not exist")
+        
+def delete_category(category):
+    if os.path.exists(category):
+        shutil.rmtree(category)
+        print("Category Deleted ! :)")
+        display_recipes_files()
+    else:
+        print("Category does not exist")
+              
 
 #This function ask what the user wants to do once the recipe content has been displayed     
 def user_choices(recipe):
@@ -69,9 +89,6 @@ def displayRecipeContent(selectedRecipe):
     print("--------------------------------------------------------------------------------------------------")
     user_choices(selectedRecipe)
   
-    
-
-
 #this Function gets the recipe when a user picks a category
 def showRecipe(recipe):
     recipes_path = Path().absolute()
@@ -79,14 +96,49 @@ def showRecipe(recipe):
     scan_recipes = os.scandir(recipe_full_path)
     files_path_list = []
     counter = 1
+    user_input_controller = False
     system('cls')
-    print("Which Recipe would you like to read ?: ")
+    
     for recipe in scan_recipes:
         files_path_list.append(PurePath(recipe_full_path , recipe))
         print(f"{counter}.{Path(recipe_full_path , recipe).stem}")
         counter +=1
-    recipeSelected = input("Select a Recipe: ")     
-    displayRecipeContent(files_path_list[int(recipeSelected) - 1])
+        
+    if len(files_path_list) == 0:
+        print("This is an empty Category ! ")
+        create_new_recipe(recipe_full_path)
+    else:
+        print("Which Recipe would you like to read ?: ")
+        for recipe in scan_recipes:
+         files_path_list.append(PurePath(recipe_full_path , recipe))
+         print(f"{counter}.{Path(recipe_full_path , recipe).stem}")
+        counter +=1
+         
+    recipeSelected = input("Please Choose an Option:\nSelect Recipe:\nPress 0 to Main menu:\nPress -1 To delete this Category ")  
+    
+    while user_input_controller == False:
+        if int(recipeSelected) == -1:
+            delete_category(recipe_full_path)
+            break
+        elif int(recipeSelected) == 0:
+            user_confirmation = input("Are you sure you want to go back to Main Menu ?  Y / N : ")
+            if user_confirmation.upper() == "Y":
+                system('cls')
+                user_input_controller = True
+                display_recipes_files()
+                break
+            elif user_confirmation.upper() == "N":
+                recipeSelected = 'Go Back to Loop'
+            else:
+                print("The Letter Entered is Invalid !")          
+        if  not recipeSelected.isdigit():
+            recipeSelected = input("Select a Recipe or Press 0 to Main menu: ")
+        elif int(recipeSelected) > len(files_path_list):
+            recipeSelected = input("Select a Recipe or Press 0 to Main menu: ")
+        else:
+            displayRecipeContent(files_path_list[int(recipeSelected) - 1])  
+            
+           
    
     
 
@@ -94,8 +146,10 @@ def showRecipe(recipe):
 def evaluateUserInput(choice , menu):
     if not choice.isdigit():
        selectRecipe(menu)
+    elif int(choice) == 0:
+        create_new_category()
     elif choice.isdigit() and int(choice) > 0 and int(choice) <= len(menu):
-       showRecipe(menu[int(choice)-1])
+       showRecipe(menu[int(choice)-1])        
     else:
         selectRecipe(menu)
                 
@@ -106,5 +160,4 @@ def greet_user():
     
 
 greet_user()
-
 
